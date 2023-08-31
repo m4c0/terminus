@@ -1,11 +1,13 @@
 export module terminus;
 import hai;
 import jute;
+import silog;
 
 namespace terminus {
 export class prog {
 public:
-  virtual ~prog() = 0;
+  prog() = default;
+  virtual ~prog() = default;
 
   prog(const prog &) = delete;
   prog(prog &&) = delete;

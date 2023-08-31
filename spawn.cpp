@@ -1,13 +1,22 @@
 module;
+#include <errno.h>
 #include <fcntl.h>
 #include <spawn.h>
+#include <string.h>
 #include <util.h>
 
 module terminus;
 import hai;
 import jute;
+import silog;
 
 namespace terminus {
+class spawn_prog : public prog {
+public:
+  void send(jute::view chars) override {}
+  jute::heap recv() override { return {}; }
+};
+
 [[nodiscard]] hai::uptr<prog> spawn(const spawn_params &p) {
   unsigned argc = p.args.size();
 
@@ -31,6 +40,7 @@ namespace terminus {
   int pri;
   int sec;
   if (-1 == openpty(&pri, &sec, 0, 0, &sz)) {
+    silog::log(silog::error, "openpty: %s", strerror(errno));
     return {};
   }
 
@@ -39,8 +49,11 @@ namespace terminus {
   posix_spawn_file_actions_adddup2(&sfa, sec, 0);
   posix_spawn_file_actions_adddup2(&sfa, sec, 1);
   posix_spawn_file_actions_adddup2(&sfa, sec, 2);
-  posix_spawnp(0, args[0], &sfa, 0, args.begin(), env);
+  if (0 != posix_spawnp(0, args[0], &sfa, 0, args.begin(), env)) {
+    silog::log(silog::error, "posix_spawnp: %s", strerror(errno));
+    return {};
+  }
 
-  return {};
+  return hai::uptr<prog>{new spawn_prog{}};
 }
 } // namespace terminus
