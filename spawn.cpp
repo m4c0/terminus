@@ -81,8 +81,8 @@ public:
   env[0] = 0;
 
   winsize sz{
-      .ws_row = p.con_height,
-      .ws_col = p.con_width,
+      .ws_row = static_cast<unsigned short>(p.con_height),
+      .ws_col = static_cast<unsigned short>(p.con_width),
   };
 
   int pri;
