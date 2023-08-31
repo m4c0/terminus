@@ -3,6 +3,8 @@ module;
 #include <fcntl.h>
 #include <spawn.h>
 #include <string.h>
+#include <sys/wait.h>
+#include <unistd.h>
 #include <util.h>
 
 module terminus;
@@ -12,7 +14,19 @@ import silog;
 
 namespace terminus {
 class spawn_prog : public prog {
+  int m_pri;
+  int m_sec;
+  int m_pid;
+
 public:
+  spawn_prog(int pri, int sec, int pid) : m_pri{pri}, m_sec{sec}, m_pid{pid} {}
+
+  ~spawn_prog() {
+    close(m_pri); // surprisingly important - otherwise child don't exit
+    close(m_sec);
+    waitpid(m_pid, nullptr, 0);
+  }
+
   void send(jute::view chars) override {}
   jute::heap recv() override { return {}; }
 };
@@ -49,11 +63,13 @@ public:
   posix_spawn_file_actions_adddup2(&sfa, sec, 0);
   posix_spawn_file_actions_adddup2(&sfa, sec, 1);
   posix_spawn_file_actions_adddup2(&sfa, sec, 2);
-  if (0 != posix_spawnp(0, args[0], &sfa, 0, args.begin(), env)) {
+
+  int pid;
+  if (0 != posix_spawnp(&pid, args[0], &sfa, 0, args.begin(), env)) {
     silog::log(silog::error, "posix_spawnp: %s", strerror(errno));
     return {};
   }
 
-  return hai::uptr<prog>{new spawn_prog{}};
+  return hai::uptr<prog>{new spawn_prog{pri, sec, pid}};
 }
 } // namespace terminus
