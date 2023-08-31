@@ -8,8 +8,12 @@ import terminus;
 
 void recv(auto &p) {
   auto str = p->recv();
-  while ((*str).size() > 0) {
-    printf("%*s", static_cast<int>((*str).size()), (*str).data());
+  while (str.size() == 0) {
+    str = p->recv();
+  }
+  while (str.size() > 0) {
+    fwrite(str.begin(), str.size(), 1, stdout);
+    fflush(stdout);
     str = p->recv();
   }
 }

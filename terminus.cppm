@@ -15,7 +15,7 @@ public:
   prog &operator=(prog &&) = delete;
 
   virtual void send(jute::view chars) = 0;
-  [[nodiscard]] virtual jute::heap recv() = 0;
+  [[nodiscard]] virtual hai::varray<char> recv() = 0;
 };
 
 export struct spawn_params {

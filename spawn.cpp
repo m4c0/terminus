@@ -29,8 +29,40 @@ public:
     waitpid(m_pid, nullptr, 0);
   }
 
-  void send(jute::view chars) override {}
-  jute::heap recv() override { return {}; }
+  void send(jute::view chars) override {
+    if (0 >= write(m_pri, chars.data(), chars.size())) {
+      silog::log(silog::error, "write: %s", strerror(errno));
+    }
+  }
+
+  hai::varray<char> recv() override {
+    fd_set set;
+    FD_ZERO(&set);
+    FD_SET(m_pri, &set);
+
+    timeval timeout{
+        .tv_sec = 0,
+        .tv_usec = 500000,
+    };
+    switch (select(m_pri + 1, &set, NULL, NULL, &timeout)) {
+    case -1:
+      silog::log(silog::error, "select: %s", strerror(errno));
+      return {};
+    case 0:
+      return {};
+    default: {
+      hai::varray<char> res{1024};
+      auto rd = read(m_pri, res.begin(), res.size());
+      if (rd <= 0) {
+        silog::log(silog::error, "read: %s", strerror(errno));
+        return {};
+      }
+
+      res.truncate(rd);
+      return res;
+    }
+    }
+  }
 };
 
 [[nodiscard]] hai::uptr<prog> spawn(const spawn_params &p) {
