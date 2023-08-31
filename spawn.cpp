@@ -1,6 +1,7 @@
 module;
 #include <errno.h>
 #include <fcntl.h>
+#include <signal.h>
 #include <spawn.h>
 #include <string.h>
 #include <sys/wait.h>
@@ -22,6 +23,7 @@ public:
   spawn_prog(int pri, int sec, int pid) : m_pri{pri}, m_sec{sec}, m_pid{pid} {}
 
   ~spawn_prog() {
+    kill(m_pid, SIGTERM);
     close(m_pri); // surprisingly important - otherwise child don't exit
     close(m_sec);
     waitpid(m_pid, nullptr, 0);
