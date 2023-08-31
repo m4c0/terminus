@@ -1,2 +1,3 @@
-# ecow-template
-Template repo for ECOW projects
+# terminus
+
+Library for running terminal process embedded in a pseudo-terminal
