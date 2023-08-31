@@ -23,9 +23,10 @@ public:
   spawn_prog(int pri, int sec, int pid) : m_pri{pri}, m_sec{sec}, m_pid{pid} {}
 
   ~spawn_prog() {
-    kill(m_pid, SIGTERM);
+    silog::log(silog::debug, "Stopping PID %d", m_pid);
     close(m_pri); // surprisingly important - otherwise child don't exit
     close(m_sec);
+    kill(m_pid, SIGKILL); // TODO: find a better way
     waitpid(m_pid, nullptr, 0);
   }
 
@@ -47,7 +48,7 @@ public:
     switch (select(m_pri + 1, &set, NULL, NULL, &timeout)) {
     case -1:
       silog::log(silog::error, "select: %s", strerror(errno));
-      return {};
+      throw recv_failed{};
     case 0:
       return {};
     default: {
@@ -55,7 +56,7 @@ public:
       auto rd = read(m_pri, res.begin(), res.size());
       if (rd <= 0) {
         silog::log(silog::error, "read: %s", strerror(errno));
-        return {};
+        throw recv_failed{};
       }
 
       res.truncate(rd);
@@ -89,7 +90,7 @@ public:
   int sec;
   if (-1 == openpty(&pri, &sec, 0, 0, &sz)) {
     silog::log(silog::error, "openpty: %s", strerror(errno));
-    return {};
+    throw spawn_failed{};
   }
 
   posix_spawn_file_actions_t sfa{};
@@ -101,7 +102,7 @@ public:
   int pid;
   if (0 != posix_spawnp(&pid, args[0], &sfa, 0, args.begin(), env)) {
     silog::log(silog::error, "posix_spawnp: %s", strerror(errno));
-    return {};
+    throw spawn_failed{};
   }
 
   return hai::uptr<prog>{new spawn_prog{pri, sec, pid}};

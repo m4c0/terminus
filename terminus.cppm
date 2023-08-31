@@ -4,6 +4,9 @@ import jute;
 import silog;
 
 namespace terminus {
+export class spawn_failed {};
+export class recv_failed {};
+
 export class prog {
 public:
   prog() = default;

@@ -18,7 +18,7 @@ void recv(auto &p) {
   }
 }
 
-extern "C" int main() {
+void try_main() {
   using namespace jute::literals;
 
   terminus::spawn_params sp{
@@ -31,4 +31,12 @@ extern "C" int main() {
   recv(p);
   p->send(":q");
   recv(p);
+}
+extern "C" int main() {
+  try {
+    try_main();
+    return 0;
+  } catch (...) {
+    return 1;
+  }
 }
