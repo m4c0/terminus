@@ -16,9 +16,11 @@ public:
   [[nodiscard]] virtual jute::heap recv() = 0;
 };
 
-[[nodiscard]] hai::uptr<prog> spawn_p(jute::view *argv, unsigned argc);
-export [[nodiscard]] hai::uptr<prog> spawn(auto... args) {
-  jute::view a[sizeof...(args)]{args...};
-  return spawn_p(a, sizeof...(args));
-}
+export struct spawn_params {
+  unsigned con_width;
+  unsigned con_height;
+  hai::array<jute::view> args;
+};
+
+export [[nodiscard]] hai::uptr<prog> spawn(const spawn_params &p);
 } // namespace terminus
