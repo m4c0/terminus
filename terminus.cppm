@@ -24,3 +24,7 @@ export struct spawn_params {
 
 export [[nodiscard]] hai::uptr<prog> spawn(const spawn_params &p);
 } // namespace terminus
+
+#ifdef __APPLE__
+#pragma ecow add_impl spawn
+#endif
