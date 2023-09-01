@@ -31,8 +31,17 @@ public:
   }
 
   void send(jute::view chars) override {
-    if (chars.size() >= write(m_pri, chars.data(), chars.size())) {
+    int res = write(m_pri, chars.data(), chars.size());
+    if (res < 0) {
       silog::log(silog::error, "write: %s", strerror(errno));
+      throw send_failed{};
+    }
+    if (res == 0) {
+      silog::log(silog::error, "write: eof");
+      throw send_failed{};
+    }
+    if (res > 0 && res != chars.size()) {
+      silog::log(silog::error, "write: truncated output of %d bytes", res);
       throw send_failed{};
     }
   }
