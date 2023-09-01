@@ -36,7 +36,7 @@ public:
     }
   }
 
-  hai::varray<char> recv() override {
+  void recv(buffer *b) override {
     fd_set set;
     FD_ZERO(&set);
     FD_SET(m_pri, &set);
@@ -45,27 +45,25 @@ public:
         .tv_sec = 0,
         .tv_usec = 500000,
     };
-    switch (select(m_pri + 1, &set, NULL, NULL, &timeout)) {
-    case -1:
+    auto sel = select(m_pri + 1, &set, NULL, NULL, &timeout);
+    if (sel == -1) {
       silog::log(silog::error, "select: %s", strerror(errno));
       throw recv_failed{};
-    case 0:
-      return {};
-    default: {
-      hai::varray<char> res{1024};
-      auto rd = read(m_pri, res.begin(), res.size());
-      if (rd < 0) {
-        silog::log(silog::error, "read: %s", strerror(errno));
-        throw recv_failed{};
-      } else if (rd == 0) {
-        silog::log(silog::error, "read: eof");
-        throw recv_failed{};
-      }
+    }
+    if (sel == 0)
+      return;
 
-      res.truncate(rd);
-      return res;
+    auto rd = read(m_pri, b->data(), b->size());
+    if (rd < 0) {
+      silog::log(silog::error, "read: %s", strerror(errno));
+      throw recv_failed{};
+    } else if (rd == 0) {
+      silog::log(silog::error, "read: eof");
+      throw recv_failed{};
     }
-    }
+
+    b->set_size(rd);
+    return;
   }
 };
 

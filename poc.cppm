@@ -7,14 +7,15 @@ import jute;
 import terminus;
 
 void recv(auto &p) {
-  auto str = p->recv();
-  while (str.size() == 0) {
-    str = p->recv();
-  }
-  while (str.size() > 0) {
-    fwrite(str.begin(), str.size(), 1, stdout);
+  terminus::buffer b{};
+  p->recv(&b);
+  while (b.size() == 0)
+    p->recv(&b);
+
+  while (b.size() > 0) {
+    fwrite(b.data(), b.size(), 1, stdout);
     fflush(stdout);
-    str = p->recv();
+    p->recv(&b);
   }
 }
 
