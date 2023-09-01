@@ -54,7 +54,7 @@ public:
     if (sel == 0)
       return;
 
-    auto rd = read(m_pri, b->data(), b->size());
+    auto rd = read(m_pri, b->data(), b->capacity());
     if (rd < 0) {
       silog::log(silog::error, "read: %s", strerror(errno));
       throw recv_failed{};
