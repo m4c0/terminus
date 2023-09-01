@@ -31,8 +31,9 @@ public:
   }
 
   void send(jute::view chars) override {
-    if (0 >= write(m_pri, chars.data(), chars.size())) {
+    if (chars.size() >= write(m_pri, chars.data(), chars.size())) {
       silog::log(silog::error, "write: %s", strerror(errno));
+      throw send_failed{};
     }
   }
 

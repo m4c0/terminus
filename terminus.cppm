@@ -6,6 +6,7 @@ import silog;
 namespace terminus {
 export class spawn_failed {};
 export class recv_failed {};
+export class send_failed {};
 
 export class buffer {
   static constexpr const auto buf_size = 1024;
