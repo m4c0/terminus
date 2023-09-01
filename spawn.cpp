@@ -51,8 +51,10 @@ public:
       silog::log(silog::error, "select: %s", strerror(errno));
       throw recv_failed{};
     }
-    if (sel == 0)
+    if (sel == 0) {
+      b->set_size(0);
       return;
+    }
 
     auto rd = read(m_pri, b->data(), b->capacity());
     if (rd < 0) {
