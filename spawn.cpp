@@ -54,8 +54,11 @@ public:
     default: {
       hai::varray<char> res{1024};
       auto rd = read(m_pri, res.begin(), res.size());
-      if (rd <= 0) {
+      if (rd < 0) {
         silog::log(silog::error, "read: %s", strerror(errno));
+        throw recv_failed{};
+      } else if (rd == 0) {
+        silog::log(silog::error, "read: eof");
         throw recv_failed{};
       }
 
