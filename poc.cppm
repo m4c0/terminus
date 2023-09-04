@@ -30,7 +30,9 @@ void try_main() {
 
   auto p = terminus::spawn(sp);
   recv(p);
-  p->send(":q");
+  p->send("iThis is fine!\n\e");
+  recv(p);
+  p->send(":qa!\n");
   recv(p);
 }
 extern "C" int main() {
