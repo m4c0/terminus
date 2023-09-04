@@ -58,9 +58,12 @@ class spawn_prog : public prog {
         HeapAlloc(GetProcessHeap(), 0, req));
     InitializeProcThreadAttributeList(si.lpAttributeList, 1, 0, &req);
 
-    UpdateProcThreadAttribute(si.lpAttributeList, 0,
-                              PROC_THREAD_ATTRIBUTE_PSEUDOCONSOLE, *m_hpcon,
-                              sizeof(*m_hpcon), nullptr, nullptr);
+    if (!UpdateProcThreadAttribute(si.lpAttributeList, 0,
+                                   PROC_THREAD_ATTRIBUTE_PSEUDOCONSOLE,
+                                   *m_hpcon, sizeof(HPCON), nullptr, nullptr)) {
+      silog::log(silog::error, "failed to update thread attribute");
+      throw spawn_failed{};
+    }
     return si;
   }
 
@@ -99,16 +102,12 @@ public:
   }
   void recv(buffer *b) override {
     DWORD rd{};
-    PeekNamedPipe(*m_ors, nullptr, 0, nullptr, &rd, nullptr);
-    if (rd == 0) {
-      b->set_size(0);
-      return;
+    // TODO: check if we need PeekNamedPipe or similar
+    if (!ReadFile(*m_ors, b->data(), b->capacity(), &rd, nullptr)) {
+      silog::log(silog::error, "read: failed");
+      throw recv_failed{};
     }
-    auto sz = (rd < b->capacity()) ? rd : b->capacity();
-
-    // TODO: check errors
-    ReadFile(*m_ors, b->data(), sz, &rd, nullptr);
-    b->set_size(sz);
+    b->set_size(rd);
   }
 };
 
