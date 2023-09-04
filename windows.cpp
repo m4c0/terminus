@@ -72,6 +72,8 @@ public:
 
     jute::heap args{};
     for (auto arg : p.args) {
+      if ((*args).size() > 0)
+        args = args + " ";
       args = args + arg;
     }
 
