@@ -50,7 +50,7 @@ export [[nodiscard]] hai::uptr<prog> spawn(const spawn_params &p);
 } // namespace terminus
 
 #ifdef __APPLE__
-#pragma ecow add_impl spawn
+#pragma leco add_impl spawn
 #elif _WIN32
-#pragma ecow add_impl windows
+#pragma leco add_impl windows
 #endif

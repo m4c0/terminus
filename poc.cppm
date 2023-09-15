@@ -1,5 +1,6 @@
 module;
 #include <stdio.h>
+#pragma leco tool
 
 export module poc;
 import hai;
