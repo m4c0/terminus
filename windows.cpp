@@ -80,7 +80,6 @@ public:
       args = args + arg;
     }
 
-    auto args_sz = (*args).size() + 1;
     auto cli = (*args).cstr();
 
     PROCESS_INFORMATION pi{};
